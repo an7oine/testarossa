@@ -9,7 +9,7 @@ import sys
 import unittest
 
 
-def testarossa_testit(self, loader, tests, pattern):
+def testarossa_testit(moduuli, loader, tests, pattern):
   '''
   Palauta moduulin `self` sisältämät Testarossa-testiaineistot
   `unittest.TestSuite`-pakettina.
@@ -19,7 +19,8 @@ def testarossa_testit(self, loader, tests, pattern):
     loader.loadTestsFromTestCase(
       type(
         testi.pop('__name__'),
-        (unittest.TestCase, ),
+        (testi.pop('__class__'), )
+        if testi.get('__class__') else (unittest.TestCase, ),
         testi,
       )
     )
@@ -40,7 +41,14 @@ def lisaa_testi(*, nayte, koe, **kwargs):
   https://docs.python.org/3/library/unittest.html#load-tests-protocol
   '''
   _nayte = nayte.__func__ if inspect.ismethoddescriptor(nayte) else nayte
-  moduuli = sys.modules[_nayte.__module__]
+  if getattr(_nayte, '__module__', None):
+    moduuli = sys.modules[_nayte.__module__]
+  elif getattr(koe, '__module__', None):
+    moduuli = sys.modules[koe.__module__]
+  else:
+    raise ValueError(
+      'Joko näytteen tai kokeen on viitattava johonkin Python-moduuliin!'
+    )
   moduuli.__dict__.setdefault('_testarossa', [])
   moduuli._testarossa.append(dict(
     # Asetetaan testin moduuliksi näytteen moduuli.
@@ -50,16 +58,13 @@ def lisaa_testi(*, nayte, koe, **kwargs):
     # Muodostetaan määre, joka palauttaa ajonaikaisesti
     # testattavan näytteen.
     nayte=property(lambda self: nayte),
-    **(koe if isinstance(koe, dict) else {
-      (
-        'test_' + (getattr(koe, '__name__', None) or '')
-      ): koe if koe is not None else (
-        lambda self: self.nayte(
-          *getattr(self, 'nayte_args', []),
-          **getattr(self, 'nayte_kwargs', {}),
-        )
-      ),
-    }),
+    **(
+      {'__class__': koe} if isinstance(koe, type)
+      else koe if isinstance(koe, dict)
+      else {
+        'test_' + (getattr(koe, '__name__', None) or ''): koe,
+      }
+    ),
     **kwargs,
   ))
   if not hasattr(moduuli, 'load_tests'):
@@ -77,9 +82,9 @@ def koriste(*args, **kwargs):
   # pylint: disable=no-else-return
   if len(args) == 1 and not kwargs:
     # Salli oikopolku:
-    # @testarossa    -->    @testarossa(koe=None)
+    # @testarossa    -->    @testarossa()
     # def ...               def ...
-    return koriste(koe=None)(*args)
+    return koriste()(*args)
   elif args:
     raise ValueError(
       'Vain nimetyt parametrit sallitaan.'
