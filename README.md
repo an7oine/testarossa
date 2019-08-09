@@ -15,6 +15,7 @@ Python 3.5+
 Käyttöönotto:
 -------------
 
+Asenna paketti:
 ```bash
 pip install testarossa
 ```
@@ -26,8 +27,8 @@ Suorita alustuskoodi (`import testarossa`) projektityypistä ja -rakenteesta rii
 
 Alustuksen yhteydessä testimoduulien hakukriteereitä (ks. `unittest.TestLoader`) muokataan ajonaikaisesti siten, että koristeen `@testarossa` sisältävät python-moduulit käsitellään (tavanomaisten, `test*.py`-nimisten lisäksi) testimoduuleina.
 
-Testien kirjoittaminen osaksi tuotantomoduulia:
------------------------------------------------
+Käyttö
+------
 
 Moduuli on kutsuttavissa sellaisenaan funktiona. Nimettyinä parametreinä voidaan antaa
 - `nayte`: tuotantokoodin osa, jota testataan, esim.
@@ -98,3 +99,45 @@ def funktio_jota_testataan(x, y):
   return x * y
 ```
 
+Laajennokset
+------------
+
+Testarossa-testejä on mahdollista täydentää ja mukauttaa sille suunniteltujen laajennoksien avulla.
+
+Kukin laajennosfunktio saa parametrinään testisanakirjan, joka sisältää em. `nayte`- ja `koe`-avaimet sekä mahdolliset muut `@testarossa`-kutsulle annetut nimetyt parametrit. Kukin laajennos saa vuorollaan tilaisuuden muokata tätä sanakirjaa, minkä jälkeen lopullinen `unittest.TestCase`- (tai muu määritetty) alaluokka muodostetaan sanakirjan tietojen mukaan.
+
+Järjestelmään asennetut testarossa-laajennokset tunnistetaan ja ladataan automaattisesti `entry_points`-määritysten mukaan. Kukin laajennos voi asettaa oman suoritusjärjestyksensä `ennen`- ja `jalkeen`-määritteiden avulla.
+
+Asennustiedot (`setup.py`):
+```python
+setup(
+  ...
+  entry_points={
+    'testarossa.laajennos': [
+      'nimi = paketti:esimerkki',
+    ],
+  },
+  ...
+)
+```
+
+Tiedosto `paketti/__init__.py`:
+```python
+class Esimerkkiluokka(unittest.TestCase):
+  def setUp(self):
+    print('setUp')
+  def tearDown(self):
+    print('tearDown')
+
+def esimerkki(testi):
+  return {
+    **testi,
+    '__class__': Esimerkkiluokka,
+  }
+
+# Mahdolliset muut laajennokset, jotka on ladattava tämän jälkeen.
+esimerkki.ennen = ('muu_laajennos_1', )
+
+# Mahdolliset muut laajennokset, jotka on ladattava ennen tätä.
+esimerkki.jalkeen = ('muu_laajennos_2', )
+```

@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 ## -*- coding: utf-8 -*-
 # vi: et sw=2 fileencoding=utf-8
-# pylint: disable=protected-access
+# pylint: disable=protected-access, invalid-name
 
 import functools
 import inspect
 import sys
 import unittest
+
+from .laajennos import laajennokset
 
 
 def testarossa_testit(moduuli, loader, tests, pattern):
@@ -24,7 +26,7 @@ def testarossa_testit(moduuli, loader, tests, pattern):
         testi,
       )
     )
-    for testi in self._testarossa
+    for testi in map(laajennokset, moduuli._testarossa)
   )
   # def testarossa_testit
 
@@ -85,13 +87,16 @@ def koriste(*args, **kwargs):
     # @testarossa    -->    @testarossa()
     # def ...               def ...
     return koriste()(*args)
+
   elif args:
     raise ValueError(
       'Vain nimetyt parametrit sallitaan.'
     )
+
   elif 'koe' in kwargs and 'nayte' in kwargs:
     # Näyte ja testi on annettu; lisää testi sellaisenaan.
     return lisaa_testi(**kwargs)
+
   elif 'koe' not in kwargs and 'nayte' in kwargs:
     # Näyte on annettu; palautetaan yksinkertainen koriste,
     # joka ottaa kokeen ja lisää testin.
@@ -99,6 +104,7 @@ def koriste(*args, **kwargs):
       # pylint: disable=missing-kwoa
       return lisaa_testi(koe=koe, **kwargs)
     return koristeltu_koe
+
   elif 'koe' in kwargs and 'nayte' not in kwargs:
     # Koe on annettu; palautetaan yksinkertainen koriste,
     # joka ottaa näytteen ja lisää testin.
@@ -107,7 +113,8 @@ def koriste(*args, **kwargs):
       lisaa_testi(nayte=nayte, **kwargs)
       return nayte
     return koristeltu_nayte
-  elif 'koe' not in kwargs and 'nayte' not in kwargs:
+
+  else: #if 'koe' not in kwargs and 'nayte' not in kwargs:
     # Näytettä eikä koetta ei ole annettu;
     # palauta koriste (1), joka ottaa kokeen ja palauttaa uuden
     # koristeen (2), joka ottaa valinnaisena lisää nimettyjä
@@ -131,6 +138,4 @@ def koriste(*args, **kwargs):
         # def koristele_nayte
       return koristele_nayte
     return koristeltu_koe
-  else:
-    raise RuntimeError('Loogisesti mahdoton?')
   # def koriste
