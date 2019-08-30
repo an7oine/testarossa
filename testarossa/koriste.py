@@ -57,6 +57,8 @@ def lisaa_testi(*, nayte, koe, **kwargs):
     __module__=_nayte.__module__,
     # Poimitaan nimi; oletusarvo näytteen mukaan.
     __name__=kwargs.pop('__name__', _nayte.__name__),
+    # Alkuperäinen näyte.
+    _nayte=nayte,
     # Muodostetaan määre, joka palauttaa ajonaikaisesti
     # testattavan näytteen.
     nayte=property(lambda self: nayte),
