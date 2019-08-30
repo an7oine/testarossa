@@ -61,7 +61,7 @@ import testarossa
 class Tuotanto:
   def __str__(self):
     return 'toimii'
-testarossa( # @testarossa
+testarossa( # @testarossa <-- varmistetaan, että testi ajetaan
   nayte=Tuotanto,
   koe=lambda self: self.assertEqual(str(self.nayte()), 'toimii'),
 )
@@ -76,10 +76,10 @@ def funktio_jota_testataan(x, y):
 ...
 
 # Tapa 2b: ajettava näyte annetaan suoraan koristeelle.
-def osamäärä(x, y):
+def osamaara(x, y):
   return x / y
-@testarossa(nayte=laske_summa)
-def voiko_nollalla_jakaa(self):
+@testarossa(nayte=osamaara)
+def nollalla_ei_voi_jakaa(self):
   return self.assertRaises(ZeroDivisionError, self.nayte, 1, 0)
 ...
 
@@ -88,15 +88,15 @@ def voiko_nollalla_jakaa(self):
 @testarossa(
   luvut=(1, 2),
 )
-def laske_yksi_ja_kaksi(self):
+def onko_kolme(self):
   self.assertEqual(self.nayte(*self.luvut), 3)
 ...
-@laske_yksi_ja_kaksi
+@onko_kolme
 def funktio_jota_testataan(x, y):
-  return x + y
-@laske_yksi_ja_kaksi(luvut=(3, 1))
+  return x + y # oletuksena x=1, y=2 --> läpäisee testin
+@onko_kolme(luvut=(3, 1))
 def funktio_jota_testataan(x, y):
-  return x * y
+  return x * y # nyt x=3, y=1 --> läpäisee testin
 ```
 
 Laajennokset
