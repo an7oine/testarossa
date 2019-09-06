@@ -62,13 +62,13 @@ def lisaa_testi(*, nayte, koe, **kwargs):
     # Muodostetaan määre, joka palauttaa ajonaikaisesti
     # testattavan näytteen.
     nayte=property(lambda self: nayte),
+    # Lisää koeluokka, koefunktiot tai yksittäinen koefunktio.
     **(
       {'__class__': koe} if isinstance(koe, type)
       else koe if isinstance(koe, dict)
-      else {
-        'test_' + (getattr(koe, '__name__', None) or ''): koe,
-      }
+      else {(getattr(koe, '__name__', None) or 'testi'): koe}
     ),
+    # Lisää muut nimetyt parametrit sellaisenaan.
     **kwargs,
   ))
   if not hasattr(moduuli, 'load_tests'):

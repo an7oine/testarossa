@@ -34,12 +34,13 @@ class Laajennos:
   # class Laajennos
 
 
-_laajennokset = sorted(map(Laajennos, pkg_resources.iter_entry_points(
-  'testarossa.laajennos'
-)))
-
-
+_laajennokset = None
 def laajennokset(testi):
+  global _laajennokset
+  if _laajennokset is None:
+    _laajennokset = sorted(map(Laajennos, pkg_resources.iter_entry_points(
+      'testarossa.laajennos'
+    )))
   for laajennos in _laajennokset:
     testi = laajennos(testi)
   return testi

@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-# pylint: disable=protected-access
+# pylint: disable=protected-access, invalid-name, unused-import
 
-import os
 import sys
 import unittest
+from unittest import mock # Tarjotaan osana tätä moduulia.
 
 from .koriste import koriste
 
